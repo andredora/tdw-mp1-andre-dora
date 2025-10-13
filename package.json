@@ -5,7 +5,9 @@
     "build": "next build",
     "start": "next start",
     "setup": "node ./lib/setup.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^15.17.1",
@@ -31,9 +33,12 @@
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "eslint": "^9.37.0",
     "eslint-config-next": "^15.5.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^16.4.0",
+    "prettier": "^3.6.2",
     "typescript-eslint": "^8.46.0"
   }
 }
