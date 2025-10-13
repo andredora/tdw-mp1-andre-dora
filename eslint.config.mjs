@@ -1,6 +1,7 @@
 import { FlatCompat } from '@eslint/eslintrc';
 import pluginReactHooks from 'eslint-plugin-react-hooks';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 const compat = new FlatCompat({
   baseDirectory: new URL('.', import.meta.url).pathname,
@@ -20,7 +21,8 @@ const eslintConfig = [
   {
     plugins: {
       'react-hooks': pluginReactHooks,
-      '@typescript-eslint': tsPlugin
+      '@typescript-eslint': tsPlugin,
+      prettier: prettierPlugin,
     },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
@@ -30,8 +32,12 @@ const eslintConfig = [
       semi: ['error', 'always'],
       'no-console': 'warn',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-    }
-  }
+      'prettier/prettier': [
+        'error',
+        { singleQuote: true, trailingComma: 'all', semi: true },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;
