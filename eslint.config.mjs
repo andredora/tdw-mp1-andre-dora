@@ -1,0 +1,37 @@
+import { FlatCompat } from '@eslint/eslintrc';
+import pluginReactHooks from 'eslint-plugin-react-hooks';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+
+const compat = new FlatCompat({
+  baseDirectory: new URL('.', import.meta.url).pathname,
+});
+
+const eslintConfig = [
+  ...compat.extends('next/core-web-vitals'),
+  {
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      'out/**',
+      'build/**',
+      'next-env.d.ts',
+    ],
+  },
+  {
+    plugins: {
+      'react-hooks': pluginReactHooks,
+      '@typescript-eslint': tsPlugin
+    },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      semi: ['error', 'always'],
+      'no-console': 'warn',
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    }
+  }
+];
+
+export default eslintConfig;
