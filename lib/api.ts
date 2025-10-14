@@ -6,11 +6,9 @@ const POST_GRAPHQL_FIELDS = `
   }
   date
   author {
-    ... on Author {
-      name
-      picture {
-        url
-      }
+    name
+    picture {
+      url
     }
   }
   excerpt
@@ -19,17 +17,21 @@ const POST_GRAPHQL_FIELDS = `
   }
 `;
 
-export async function fetchGraphQL(query: string, preview = false): Promise<any> {
+export async function fetchGraphQL(
+  query: string,
+  preview = false,
+): Promise<any> {
   return fetch(
     `https://graphql.contentful.com/content/v1/spaces/${process.env.CONTENTFUL_SPACE_ID}`,
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${preview
-          ? process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN
-          : process.env.CONTENTFUL_ACCESS_TOKEN
-          }`,
+        Authorization: `Bearer ${
+          preview
+            ? process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN
+            : process.env.CONTENTFUL_ACCESS_TOKEN
+        }`,
       },
       body: JSON.stringify({ query }),
       next: { tags: ['posts'] },
@@ -64,25 +66,24 @@ export async function getPreviewPostBySlug(slug: string | null): Promise<any> {
 }
 
 export async function getAllPosts(
-  preview: boolean,
-  fetcher = fetchGraphQL
+  isDraftMode: boolean,
+  fetcher: typeof fetchGraphQL = fetchGraphQL,
 ): Promise<any[]> {
   const entries = await fetcher(
     `query {
-      postCollection(where: { slug_exists: true }, order: date_DESC, preview: ${preview ? 'true' : 'false'
-    }) {
+      postCollection(where: { slug_exists: true }, order: date_DESC, preview: ${
+        isDraftMode ? 'true' : 'false'
+      }) {
         items {
-          slug
+          ${POST_GRAPHQL_FIELDS}
         }
       }
     }`,
-    preview
+    isDraftMode,
   );
 
   return extractPostEntries(entries);
 }
-
-
 
 export async function getPostAndMorePosts(
   slug: string,
@@ -90,8 +91,9 @@ export async function getPostAndMorePosts(
 ): Promise<any> {
   const entry = await fetchGraphQL(
     `query {
-      postCollection(where: { slug: "${slug}" }, preview: ${preview ? 'true' : 'false'
-    }, limit: 1) {
+      postCollection(where: { slug: "${slug}" }, preview: ${
+        preview ? 'true' : 'false'
+      }, limit: 1) {
         items {
           ${POST_GRAPHQL_FIELDS}
         }
@@ -101,8 +103,9 @@ export async function getPostAndMorePosts(
   );
   const entries = await fetchGraphQL(
     `query {
-      postCollection(where: { slug_not_in: "${slug}" }, order: date_DESC, preview: ${preview ? 'true' : 'false'
-    }, limit: 2) {
+      postCollection(where: { slug_not_in: "${slug}" }, order: date_DESC, preview: ${
+        preview ? 'true' : 'false'
+      }, limit: 2) {
         items {
           ${POST_GRAPHQL_FIELDS}
         }

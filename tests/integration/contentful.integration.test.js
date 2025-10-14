@@ -21,10 +21,7 @@ describe('Contentful API client (integration)', () => {
 
     const posts = await contentful.getAllPosts(false);
 
-    expect(posts).toEqual([
-      { slug: 'post1' },
-      { slug: 'post2' },
-    ]);
+    expect(posts).toEqual([{ slug: 'post1' }, { slug: 'post2' }]);
 
     expect(mockFetch).toHaveBeenCalledOnce();
     expect(mockFetch.mock.calls[0][0]).toContain('content/v1/spaces/');
@@ -34,7 +31,9 @@ describe('Contentful API client (integration)', () => {
     mockFetch.mockResolvedValueOnce({
       json: async () => ({
         data: {
-          postCollection: { items: [{ slug: 'preview1', title: 'Preview Post' }] },
+          postCollection: {
+            items: [{ slug: 'preview1', title: 'Preview Post' }],
+          },
         },
       }),
     });
@@ -82,7 +81,4 @@ describe('Contentful API client (integration)', () => {
     expect(posts).toEqual([]);
     expect(consoleSpy).toHaveBeenCalled();
   });
-
-  
-
 });

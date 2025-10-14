@@ -14,7 +14,6 @@ describe('Contentful API client (unit)', () => {
       json: async () => ({ data: { ok: true } }),
     } as Partial<Response>);
 
-
     await contentful.fetchGraphQL('query { test }');
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
@@ -25,13 +24,15 @@ describe('Contentful API client (unit)', () => {
           'Content-Type': 'application/json',
         }),
         body: expect.any(String),
-      })
+      }),
     );
   });
 
   // 2️⃣ extractPost
   test('extractPost devolve o primeiro item', () => {
-    const response = { data: { postCollection: { items: [{ slug: 'one' }, { slug: 'two' }] } } };
+    const response = {
+      data: { postCollection: { items: [{ slug: 'one' }, { slug: 'two' }] } },
+    };
     const post = contentful.extractPost(response);
     expect(post).toEqual({ slug: 'one' });
   });
@@ -45,7 +46,7 @@ describe('Contentful API client (unit)', () => {
 
   // 4️⃣ extractPostEntries inválido
   test('extractPostEntries devolve [] quando resposta é inválida', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const result = contentful.extractPostEntries(null);
     expect(result).toEqual([]);
     expect(consoleSpy).toHaveBeenCalled();
@@ -67,7 +68,7 @@ describe('Contentful API client (unit)', () => {
   // 6️⃣ getAllPosts retorna [] quando fetchGraphQL retorna inválido
   test('getAllPosts retorna [] quando fetchGraphQL retorna inválido', async () => {
     const mockFetch = vi.fn().mockResolvedValue(null);
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const posts = await contentful.getAllPosts(false, mockFetch);
 
