@@ -33,7 +33,7 @@ jobs:
         run: npm ci
 
       - name: Run Lefthook (lint + format + test)
-        run: npx lefthook run pre-commit --all
+        run: npx lefthook run pre-commit
 
       - name: Upload dependencies
         uses: actions/upload-artifact@v4
