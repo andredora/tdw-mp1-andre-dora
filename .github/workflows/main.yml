@@ -36,7 +36,7 @@ jobs:
         run: npx lefthook run pre-commit
 
       - name: Upload dependencies
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: node-modules
           path: node_modules
@@ -54,7 +54,7 @@ jobs:
           node-version: '20'
 
       - name: Download dependencies
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: node-modules
 
@@ -62,7 +62,7 @@ jobs:
         run: npm run build
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build
           path: build
