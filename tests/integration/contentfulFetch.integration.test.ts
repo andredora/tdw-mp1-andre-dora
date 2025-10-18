@@ -1,26 +1,33 @@
 import { describe, test, expect } from 'vitest';
-
 import * as contentful from '../../lib/api';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env.local' });
+if (!process.env.GITHUB_ACTIONS) {
+  dotenv.config({ path: '.env.local' });
+}
 
-const { CONTENTFUL_SPACE_ID, CONTENTFUL_ACCESS_TOKEN } = process.env;
+const {
+  CONTENTFUL_SPACE_ID,
+  CONTENTFUL_ACCESS_TOKEN,
+  CONTENTFUL_PREVIEW_ACCESS_TOKEN,
+} = process.env;
 
 if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_ACCESS_TOKEN) {
   throw new Error(
-    'Contentful environment variables are missing. Configure CONTENTFUL_SPACE_ID and CONTENTFUL_ACCESS_TOKEN in .env.local',
+    'Contentful environment variables are missing. Configure CONTENTFUL_SPACE_ID and CONTENTFUL_ACCESS_TOKEN.',
   );
 }
 
+const canRunIntegration = !!CONTENTFUL_ACCESS_TOKEN;
+
 describe('Contentful API client (integration real)', () => {
+  if (!canRunIntegration) return;
+
   test('getAllPosts retorna posts reais', async () => {
     const posts = await contentful.getAllPosts(false);
 
-    // Deve retornar um array
     expect(Array.isArray(posts)).toBe(true);
 
-    // Se houver posts, verificar estrutura mínima
     if (posts.length > 0) {
       expect(posts[0]).toHaveProperty('slug');
       expect(typeof posts[0].slug).toBe('string');
@@ -29,7 +36,7 @@ describe('Contentful API client (integration real)', () => {
 
   test('getPostAndMorePosts retorna post e maisPosts', async () => {
     const allPosts = await contentful.getAllPosts(false);
-    if (allPosts.length === 0) return; // evita erro se não houver posts
+    if (allPosts.length === 0) return;
 
     const slug = allPosts[0].slug;
     const result = await contentful.getPostAndMorePosts(slug, false);
@@ -46,6 +53,11 @@ describe('Contentful API client (integration real)', () => {
   });
 
   test('getPreviewPostBySlug retorna post correto em modo preview', async () => {
+    if (!CONTENTFUL_PREVIEW_ACCESS_TOKEN) {
+      console.warn('Skipping preview test — no preview token provided');
+      return;
+    }
+
     const previewPosts = await contentful.getAllPosts(true);
     if (previewPosts.length === 0) return;
 
