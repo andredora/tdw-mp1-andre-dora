@@ -30,7 +30,7 @@ const eslintConfig = [
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       semi: ['error', 'always'],
-      'no-console': 'warn',
+      'no-console': 'off',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'prettier/prettier': [
         'error',
