@@ -28,7 +28,9 @@ jobs:
       - name: Cache Node modules
         uses: actions/cache@v3
         with:
-          path: ~/.npm
+          path: |
+            ~/.npm
+            .next/cache
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
@@ -54,25 +56,31 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache Node modules
+      - name: Cache Node modules and Next.js
         uses: actions/cache@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: |
+            ~/.npm
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build project
         run: npm run build
-        env:
-          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
-          CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
+
+      - name: List build files (debug)
+        run: ls -la .next/ || echo ".next directory not found"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build
-          path: .next
+          name: nextjs-build
+          path: |
+            .next/
+            public/
+            package.json
+          retention-days: 7
