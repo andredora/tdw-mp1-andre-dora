@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  # Variáveis globais para todos os jobs
+  NODE_VERSION: '20'
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -37,7 +41,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -49,16 +53,7 @@ jobs:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
           CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
 
-      - name: Debug build output
-        run: |
-          echo "=== BUILD OUTPUT ==="
-          ls -la
-          echo "=== .next SIZE ==="
-          du -sh .next || echo "No .next directory"
-          echo "=== .next CONTENTS ==="
-          find .next -type f -name "*.js" | head -5 | xargs ls -la
-
-      - name: Upload build artifacts (FIXED)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
@@ -72,6 +67,11 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
 
+    # ✅ AGORA COM AS VARIÁVEIS DO CONTENTFUL!
+    env:
+      CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+      CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -79,14 +79,10 @@ jobs:
           name: nextjs-build
           path: ./
 
-      - name: Verify downloaded files
-        run: |
-          echo "=== DOWNLOADED FILES ==="
-          ls -la
-          echo "=== .next DIRECTORY ==="
-          ls -la .next/ || echo "❌ .next not found after download"
-          echo "=== ACTUAL SIZE ==="
-          du -sh .next/ || echo "Cannot calculate size"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
