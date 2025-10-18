@@ -1,8 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import * as contentful from '../../lib/api';
 
-type Post = { slug: string; title?: string };
-
 describe('Contentful API client (unit)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
