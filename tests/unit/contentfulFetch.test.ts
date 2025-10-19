@@ -6,7 +6,6 @@ describe('Contentful API client (unit)', () => {
     vi.clearAllMocks();
   });
 
-  // 1️⃣ Teste fetchGraphQL real
   test('fetchGraphQL envia o pedido correto', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       json: async () => ({ data: { ok: true } }),
@@ -26,7 +25,6 @@ describe('Contentful API client (unit)', () => {
     );
   });
 
-  // 2️⃣ extractPost
   test('extractPost devolve o primeiro item', () => {
     const response = {
       data: { postCollection: { items: [{ slug: 'one' }, { slug: 'two' }] } },
@@ -35,14 +33,12 @@ describe('Contentful API client (unit)', () => {
     expect(post).toEqual({ slug: 'one' });
   });
 
-  // 3️⃣ extractPostEntries válido
   test('extractPostEntries devolve lista válida', () => {
     const response = { data: { postCollection: { items: [{ slug: 'one' }] } } };
     const result = contentful.extractPostEntries(response);
     expect(result).toEqual([{ slug: 'one' }]);
   });
 
-  // 4️⃣ extractPostEntries inválido
   test('extractPostEntries devolve [] quando resposta é inválida', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const result = contentful.extractPostEntries(null);
@@ -50,7 +46,6 @@ describe('Contentful API client (unit)', () => {
     expect(consoleSpy).toHaveBeenCalled();
   });
 
-  // 5️⃣ getAllPosts retorna posts quando fetchGraphQL funciona
   test('getAllPosts chama fetchGraphQL e retorna posts', async () => {
     const mockPosts = [{ slug: 'post1' }];
     const mockFetch = vi.fn().mockResolvedValue({
@@ -63,7 +58,6 @@ describe('Contentful API client (unit)', () => {
     expect(posts).toEqual(mockPosts);
   });
 
-  // 6️⃣ getAllPosts retorna [] quando fetchGraphQL retorna inválido
   test('getAllPosts retorna [] quando fetchGraphQL retorna inválido', async () => {
     const mockFetch = vi.fn().mockResolvedValue(null);
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

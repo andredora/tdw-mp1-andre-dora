@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [cms-update]
-  schedule:
-    - cron: '0 0 * * *'
+  #schedule:
+  #  - cron: '0 0 * * *'
 
 env:
   NODE_VERSION: '20'
