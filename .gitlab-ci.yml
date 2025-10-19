@@ -1,0 +1,70 @@
+# .gitlab-ci.yml
+image: node:20
+
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - .next/cache/
+    - ~/.npm
+
+before_script:
+  - node --version
+  - npm --version
+
+test:
+  stage: test
+  script:
+    - npm ci
+    - npm install --save-dev eslint-plugin-react-hooks
+    - npx lefthook run pre-commit
+  only:
+    - branches
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-ci/
+
+build:
+  stage: build
+  dependencies:
+    - test
+  script:
+    - npm ci
+    - npm install --save-dev eslint-plugin-react-hooks
+    - npm run build
+  artifacts:
+    name: "nextjs-build-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .next/
+      - public/
+      - package.json
+      - package-lock.json
+      - next.config.js
+    expire_in: 1 week
+    when: on_success
+  only:
+    - branches
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-ci/
+
+deploy:
+  stage: deploy
+  dependencies:
+    - build
+  script:
+    - npm ci --omit=dev
+    - npx netlify-cli deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_AUTH_TOKEN --prod
+  only:
+    - main
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-ci/
