@@ -14,8 +14,7 @@ on:
     - cron: '0 0 * * *'
 
 env:
-  CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
-  CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
+  NODE_VERSION: '20'
 
 jobs:
   test:
@@ -24,9 +23,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - run: npm ci
+      - run: npm install --save-dev eslint-plugin-react-hooks
       - run: npx lefthook run pre-commit
 
   build:
@@ -36,15 +36,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - uses: actions/cache@v3
         with:
-          path: .next/cache
+          path: |
+            .next/cache
+            ~/.npm
           key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
       - run: npm ci
+      - run: npm install --save-dev eslint-plugin-react-hooks
       - run: npm run build
         env:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
@@ -56,6 +59,8 @@ jobs:
             .next/
             public/
             package.json
+            package-lock.json
+            next.config.js
           retention-days: 7
 
   deploy:
@@ -66,7 +71,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - uses: actions/download-artifact@v4
         with:
