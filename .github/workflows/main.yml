@@ -31,6 +31,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # - name: Cache dependencies and Next.js
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.npm
+      #       ${{ github.workspace }}/.next/cache
+      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
       - name: Install dependencies
         run: npm ci
 
@@ -47,11 +57,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: npm ci
+      # - name: Restore cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.npm
+      #       ${{ github.workspace }}/.next/cache
+      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
-      - name: Build project
-        run: npm run build
+      - run: npm ci
+      - run: npm run build
         env:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
           CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
@@ -76,13 +93,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      # - name: Restore cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.npm
+      #       ${{ github.workspace }}/.next/cache
+      #     key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
       - uses: actions/download-artifact@v4
         with:
           name: nextjs-build
           path: ./
 
-      - name: Install production dependencies
-        run: npm ci --omit=dev
+      - run: npm ci --omit=dev
 
-      - name: Deploy to Netlify
-        run: npx netlify-cli deploy --dir=.next --site ${{ secrets.NETLIFY_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --prod
+      - run: npx netlify-cli deploy --dir=.next --site ${{ secrets.NETLIFY_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --prod
