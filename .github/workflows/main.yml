@@ -3,11 +3,15 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - '**'
   pull_request:
     branches:
       - main
   workflow_dispatch:
+  repository_dispatch:
+    types: [cms-update]
+  schedule:
+    - cron: '0 0 * * *'
 
 env:
   CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
