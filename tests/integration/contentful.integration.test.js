@@ -6,7 +6,6 @@ describe('Contentful API client (integration)', () => {
     vi.clearAllMocks();
   });
 
-  // Mock global fetch para simular a API Contentful
   const mockFetch = vi.fn();
   global.fetch = mockFetch;
 
@@ -45,7 +44,6 @@ describe('Contentful API client (integration)', () => {
   });
 
   test('getPostAndMorePosts retorna post e morePosts corretamente', async () => {
-    // Mock post principal
     mockFetch.mockResolvedValueOnce({
       json: async () => ({
         data: {
@@ -54,7 +52,6 @@ describe('Contentful API client (integration)', () => {
       }),
     });
 
-    // Mock posts adicionais
     mockFetch.mockResolvedValueOnce({
       json: async () => ({
         data: {

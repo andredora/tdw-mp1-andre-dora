@@ -6,7 +6,7 @@ interface ContentfulImageProps {
   src: string;
   width?: number;
   quality?: number;
-  [key: string]: any; // For other props that might be passed
+  [key: string]: any;
 }
 
 const contentfulLoader = ({ src, width, quality }: ContentfulImageProps) => {
