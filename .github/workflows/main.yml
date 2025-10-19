@@ -17,96 +17,28 @@ env:
   NODE_VERSION: '20'
 
 jobs:
-  setup:
+  test:
     runs-on: ubuntu-latest
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.key }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Generate cache key
-        id: cache-key
-        run: echo "key=nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}" >> $GITHUB_OUTPUT
-
-  lint:
-    runs-on: ubuntu-latest
-    needs: setup
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
       - run: npm ci
-      - run: npm install --save-dev eslint-plugin-react-hooks
-      - run: npm run lint
-
-  unit-tests:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm install --save-dev eslint-plugin-react-hooks
-      - name: Run unit tests
-        run: npx vitest run tests/unit --passWithNoTests
-
-  integration-tests:
-    runs-on: ubuntu-latest
-    needs: setup
-    env:
-      CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
-      CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm install --save-dev eslint-plugin-react-hooks
-      - name: Run integration tests
-        run: npx vitest run tests/integration --passWithNoTests
-
-  content-tests:
-    runs-on: ubuntu-latest
-    needs: setup
-    env:
-      CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
-      CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm install --save-dev eslint-plugin-react-hooks
-      - name: Run content tests
-        run: npx vitest run tests/content --passWithNoTests
+      - run: npx lefthook run pre-commit
+        env:
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
 
   build:
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests, integration-tests, content-tests]
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - uses: actions/cache@v3
-        with:
-          path: |
-            .next/cache
-            ~/.npm
-          key: ${{ needs.setup.outputs.cache-key }}
-          restore-keys: |
-            nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
       - run: npm ci
-      - run: npm install --save-dev eslint-plugin-react-hooks
       - run: npm run build
         env:
           CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
@@ -118,8 +50,6 @@ jobs:
             .next/
             public/
             package.json
-            package-lock.json
-            next.config.js
           retention-days: 7
 
   deploy:
@@ -131,7 +61,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
       - uses: actions/download-artifact@v4
         with:
           name: nextjs-build
