@@ -17,9 +17,6 @@ env:
   NODE_VERSION: '20'
 
 jobs:
-  # ----------------------------
-  # Test (sem alterações)
-  # ----------------------------
   test:
     runs-on: ubuntu-latest
     env:
@@ -31,6 +28,7 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v4
+
         with:
           node-version: '20'
 
@@ -40,82 +38,62 @@ jobs:
       - name: Run tests
         run: npx lefthook run pre-commit
 
-  # ----------------------------
-  # Build
-  # ----------------------------
   build:
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      # Cache de node_modules
       - uses: actions/cache@v3
         with:
           path: node_modules
           key: deps-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             deps-${{ runner.os }}-
-
-      # Cache de build do Next.js
       - uses: actions/cache@v3
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             nextjs-${{ runner.os }}-
-
-      - name: Build App
-        run: npm run build
-
-      - name: Verify build output
-        run: ls -la .next
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+      - run: npm ci
+      - run: npm run build
+        env:
+          CONTENTFUL_SPACE_ID: ${{ secrets.CONTENTFUL_SPACE_ID }}
+          CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
+      - uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
-          path: .next/
+          path: |
+            .next/
+            public/
+            package.json
+            package-lock.json
+            next.config.js
+          retention-days: 7
 
-  # ----------------------------
-  # Deploy
-  # ----------------------------
   deploy:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      # Cache de node_modules de produção
       - uses: actions/cache@v3
         with:
           path: node_modules
           key: deps-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             deps-${{ runner.os }}-
-
-      # Baixa artifact do build
       - uses: actions/download-artifact@v4
         with:
           name: nextjs-build
-          path: .next/
-
-      - name: Install production deps
-        run: npm ci --omit=dev
-
-      - name: Deploy to Netlify
-        run: npx netlify-cli deploy --dir=.next --site ${{ secrets.NETLIFY_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --prod
+          path: ./
+      - run: npm ci --omit=dev
+      - run: npx netlify-cli deploy --dir=.next --site ${{ secrets.NETLIFY_SITE_ID }} --auth ${{ secrets.NETLIFY_AUTH_TOKEN }} --prod
