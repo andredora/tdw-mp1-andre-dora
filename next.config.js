@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
-module.exports = {
+const nextConfig = {
+  experimental: {},
+  cacheMaxMemorySize: 0,
+
   images: {
-    loader: 'custom',
     formats: ['image/avif', 'image/webp'],
   },
-  experimental: {
-    cacheLife: 7,
-    cacheHandler: 'filesystem',
-  },
 };
+
+module.exports = nextConfig;
